@@ -38,6 +38,9 @@ module MobileDevicePool
           os_properties = get_properties(device_sn, 'ro.build.version', *%w(release sdk))
           device.merge!(product_properties).merge!(os_properties)
           device['battery'] = get_battery_level(device_sn)
+          info = {}
+          info = get_app_info('taxi.android.client', device_sn)
+          device['appversion'] = info['versionName']
           devices.push(device)
         end
       end
