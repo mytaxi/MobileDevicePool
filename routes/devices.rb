@@ -1,4 +1,5 @@
 require_relative 'import'
+require 'fileutils'
 
 module MobileDevicePool
   class App < Sinatra::Base
@@ -26,24 +27,43 @@ module MobileDevicePool
         devices = LibImobileDevice.list_devices_with_details
         json devices
       end
+
+      post '/alpha/?' do
+        request.body.rewind
+        json = request.body.read.to_s
+        if json && json.length >= 2
+          req_data = JSON.parse(json)
+          file = req_data['file']
+          puts "FILE "+file
+          if file
+            result = LibImobileDevice.install_app(file)
+            result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+          else
+            return 500
+          end
+        else
+          return 500
+        end
+      end
     end
-    
+
     # Android APIs
     # ==================================================
+    #
     namespace '/api/devices/android' do
       get '/?' do
         content_type :json
         devices = Adb.list_devices_with_details
         json devices
       end
-      
+
       # Packages
       # ==================================================
       get '/:device_sn/packages/?' do |device_sn|
         content_type :json
         json Adb.list_installed_packages(device_sn)
       end
-      
+
       get '/:device_sn/packages/:package_name/?' do
         content_type :json
         json Adb.get_app_info(params[:package_name], params[:device_sn])
@@ -63,10 +83,28 @@ module MobileDevicePool
         content_type :json
         json [Adb.get_current_activity(device_sn)]
       end
-      
+
+      post '/alpha/?' do
+        request.body.rewind
+        json = request.body.read.to_s
+        if json && json.length >= 2
+          req_data = JSON.parse(json)
+          file = req_data['file']
+          if file
+            result = Adb.install_app_multiple_devices(file)
+            result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+          else
+            return 500
+          end
+        else
+          return 500
+        end
+      end
+
       post '/:device_sn/screenshots/?' do |device_sn|
         content_type :json
-        result = Adb.take_a_screenshot(settings.screenshot_dir, device_sn)
+        result = take_a_screenshot(settings.screenshot_dir, device_sn)
+        settings.screenshot_files = get_screenshots_files(settings.screenshot_dir)
         result.first ? [201, result[1].to_json] : [500, result[1].to_json]
       end
       

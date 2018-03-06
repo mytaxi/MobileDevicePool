@@ -1,4 +1,5 @@
 require_relative 'io_stream'
+require_relative 'concurrent_runner'
 
 module MobileDevicePool
   class Adb
@@ -39,10 +40,20 @@ module MobileDevicePool
           device.merge!(product_properties).merge!(os_properties)
           device['battery'] = get_battery_level(device_sn)
           info = {}
+          info = get_app_info('taxi.android.client.alpha', device_sn)
+          device['passengerAppversionAlpha'] = info['versionName']
           info = get_app_info('taxi.android.client', device_sn)
-          device['appversion'] = info['versionName']
+          device['passengerAppversion'] = info['versionName']
+          info = get_app_info('taxi.android.driver.alpha', device_sn)
+          device['driverAppversionAlpha'] = info['versionName']
+          info = get_app_info('taxi.android.driver', device_sn)
+          device['driverAppversion'] = info['versionName']
           devices.push(device)
         end
+      end
+
+      def writehello
+        puts "Threads sind geil"
       end
       
       def list_installed_packages(device_sn = nil)
@@ -66,32 +77,52 @@ module MobileDevicePool
         return [true, {'file_path' => file_path}]
       end
       
-      def get_app_info(package_name, device_sn = nil)
+      def get_app_info(package_name = nil, device_sn = nil)
         cmd = synthesize_command("adb shell dumpsys package #{package_name}", device_sn)
-        result = `#{cmd}`.chomp.match(/Packages:(.*|\n?)+\z/)[0].gsub(/Packages:\r?\n/, '').gsub(/^.*Package.*\r?\n/, '')
-        info = {}
-        number_of_leading_spaces = result.match(/^(\s+)/)[1].size
-        result.gsub(/^[^=]+:.*$/, '').gsub(/^[^=:]*$/, '').gsub(/\s+(\w+=)/, '→\1').gsub(/\r?\n/, '').split('→').reject(&:empty?).map(&:chomp).each do |x|
-          pair = x.split('=')
-          key = pair.first
-          value = pair.last
-          if value.match(/\[.*\]/)
-            info[key] = value.split(/\[|\]|\s|,/).reject(&:empty?)
-          else
-            info[key] = value
+        begin
+          result = `#{cmd}`.chomp.match(/Packages:(.*|\n?)+\z/)[0].gsub(/Packages:\r?\n/, '').gsub(/^.*Package.*\r?\n/, '')
+          info = {}
+          number_of_leading_spaces = result.match(/^(\s+)/)[1].size
+          result.gsub(/^[^=]+:.*$/, '').gsub(/^[^=:]*$/, '').gsub(/\s+(\w+=)/, '→\1').gsub(/\r?\n/, '').split('→').reject(&:empty?).map(&:chomp).each do |x|
+            pair = x.split('=')
+            key = pair.first
+            value = pair.last
+            if value.match(/\[.*\]/)
+              info[key] = value.split(/\[|\]|\s|,/).reject(&:empty?)
+            else
+              info[key] = value
+            end
           end
+          result.gsub(/\r\n^\s{#{number_of_leading_spaces + 1},}/, ' ').scan(/^\s{#{number_of_leading_spaces}}([^=]*?):\s+(.*)/).each do |x|
+            info[x.first] = x.last.chomp.split(/\s+/)
+          end
+          info
         end
-        result.gsub(/\r\n^\s{#{number_of_leading_spaces + 1},}/, ' ').scan(/^\s{#{number_of_leading_spaces}}([^=]*?):\s+(.*)/).each do |x|
-          info[x.first] = x.last.chomp.split(/\s+/)
+
+      end
+
+      def install_app(package_name, device_sn)
+          cmd = synthesize_command("adb install #{package_name}", device_sn)
+          result = `#{cmd}`.split("\r\n").last
+          if result.match('Failure')
+            return false
+          end
+          return true
+      end
+
+      def install_app_multiple_devices(package_name)
+        jobs = list_devices.inject([]) do |result, device_sn|
+          job = Proc.new do
+            install_app(package_name, device_sn)
+          end
+          result.push(job)
         end
-        info
+        concurrent_runner = ConcurrentRunner.set
+        concurrent_runner.set_producer_thread(jobs)
+        concurrent_runner.set_consumer_thread
+        concurrent_runner.run
       end
-      
-      def install_app(file, device_sn = nil)
-        cmd = synthesize_command("adb install #{package_name}", device_sn)
-        `#{cmd}`
-      end
-      
+
       def uninstall_app(package_name, device_sn = nil)
         cmd = synthesize_command("adb uninstall #{package_name}", device_sn)
         result = `#{cmd}`.chomp
@@ -103,7 +134,7 @@ module MobileDevicePool
           return false
         end
       end
-      
+
       def clear_app(package_name, device_sn = nil)
         cmd = synthesize_command("adb shell pm clear #{package_name}", device_sn)
         result = `#{cmd}`.chomp
@@ -115,7 +146,7 @@ module MobileDevicePool
           return false
         end
       end
-      
+
       def input_keyevent(keyevent, device_sn = nil)
         # keyevent should < KeyEvent.getMaxKeyCode()
         if (keyevent.to_i.to_s == keyevent.to_s) && (keyevent.to_i >= 0 && keyevent.to_i <= 221)
@@ -126,30 +157,30 @@ module MobileDevicePool
           return false
         end
       end
-      
+
       def input_text(text, device_sn = nil)
         text = text.gsub(/\s/, '%s')
         cmd = synthesize_command("adb shell input text #{text}", device_sn)
         `#{cmd}`
       end
-      
+
       def press_power_button(device_sn = nil)
         keycode_power = 26
         input_keyevent(keycode_power, device_sn)
       end
-      
+
       # Precondition: device needs to be rooted
       def change_language(language, country, device_sn = nil)
         cmd = synthesize_command("adb shell \"su -c 'setprop persist.sys.language #{language}; setprop persist.sys.country #{country}; stop; sleep 5; start'\"", device_sn)
         `#{cmd}`
       end
-      
+
       def is_device_rooted?(device_sn = nil)
         cmd = synthesize_command("adb shell 'which su; echo $?'", device_sn)
         exit_status = `#{cmd}`.split(/\r\n/)[1].to_i
         return exit_status == 0
       end
-      
+
       def get_current_activity(device_sn = nil)
         cmd = synthesize_command('adb shell dumpsys activity', device_sn)
         result = `#{cmd}`.chomp.match(/mFocusedActivity:.*?\{[^.]*?((\S+\.)*\S+)[^.]*?\}/i)
@@ -159,7 +190,7 @@ module MobileDevicePool
           return ''
         end
       end
-      
+
       def open_app_via_deep_link(package_name, deep_link, device_sn = nil)
         cmd = synthesize_command("adb shell am start -W -a android.intent.action.VIEW -d \"#{deep_link}\" #{package_name}", device_sn)
         # exit status is always 0 here
@@ -192,6 +223,7 @@ module MobileDevicePool
       end
       
       def synthesize_command(cmd, device_sn)
+        puts "CMD: " + cmd
         if device_sn.nil?
           cmd
         else
@@ -212,4 +244,5 @@ module MobileDevicePool
     
     private_class_method :synthesize_command, :get_properties
   end
-end
+  end
+

@@ -29,18 +29,18 @@
     $.get('/api/devices/android', function(data) {
       $("#androidDevices").empty();
       if (data.length > 0) {
-        $("#androidDevices").append($("<table>").attr("class", "table table-striped table-hover").append($("<thead>").append($("<tr>").append($("<td>").text("")).append($("<td>").text("Serial Number")).append($("<td>").text("Manufacturer")).append($("<td>").text("Brand")).append($("<td>").text("Model")).append($("<td>").text("OS Version")).append($("<td>").text("SDK API Level")).append($("<td>").text("Battery")).append($("<td>").text("App Version")))).append($("<tbody>")));
+        $("#androidDevices").append($("<table>").attr("class", "table table-striped table-hover").append($("<thead>").append($("<tr>").append($("<td>").text("")).append($("<td>").text("Serial Number")).append($("<td>").text("Manufacturer")).append($("<td>").text("Brand")).append($("<td>").text("Model")).append($("<td>").text("OS Version")).append($("<td>").text("SDK API Level")).append($("<td>").text("Battery")).append($("<td>").text("Passenger App Version Live/Beta")).append($("<td>").text("Passenger App Version Alpha")).append($("<td>").text("Driver App Version Live/Beta")).append($("<td>").text("Driver App Version Alpha")))).append($("<tbody>")));
         data.forEach(function(item) {
-          $("#androidDevices").find("tbody").append($("<tr>").click(function() { $(this).find("td input:radio").prop("checked", true); }).append($("<td>").append($("<input>").attr({name: "device_sn", type: "radio", value: item.sn}))).append($("<td>").text(item.sn)).append($("<td>").text(item.manufacturer)).append($("<td>").text(item.brand)).append($("<td>").text(item.model)).append($("<td>").text(item.release)).append($("<td>").text(item.sdk)).append($("<td>").text(item.battery + "%")).append($("<td>").text(item.appversion)));
+          $("#androidDevices").find("tbody").append($("<tr>").click(function() { $(this).find("td input:radio").prop("checked", true); }).append($("<td>").append($("<input>").attr({name: "device_sn", type: "radio", value: item.sn}))).append($("<td>").text(item.sn)).append($("<td>").text(item.manufacturer)).append($("<td>").text(item.brand)).append($("<td>").text(item.model)).append($("<td>").text(item.release)).append($("<td>").text(item.sdk)).append($("<td>").text(item.battery + "%")).append($("<td>").text(item.passengerAppversion)).append($("<td>").text(item.passengerAppversionAlpha)).append($("<td>").text(item.driverAppversion)).append($("<td>").text(item.driverAppversionAlpha)));
         });
       }
     });
     $.get('/api/devices/ios', function(data) {
       $("#iosDevices").empty();
       if (data.length > 0) {
-        $("#iosDevices").append($("<table>").attr("class", "table table-striped table-hover").append($("<thead>").append($("<tr>").append($("<td>").text("")).append($("<td>").text("UDID")).append($("<td>").text("Model")).append($("<td>").text("OS Version")).append($("<td>").text("Battery")))).append($("<tbody>")));
+        $("#iosDevices").append($("<table>").attr("class", "table table-striped table-hover").append($("<thead>").append($("<tr>").append($("<td>").text("")).append($("<td>").text("UDID")).append($("<td>").text("Model")).append($("<td>").text("OS Version")).append($("<td>").text("Battery")).append($("<td>").text("Passenger App Version Live/Beta")).append($("<td>").text("Passenger App Version Alpha")).append($("<td>").text("Driver App Version Live/Beta")).append($("<td>").text("Driver App Version Alpha")))).append($("<tbody>")));
         data.forEach(function(item) {
-          $("#iosDevices").find("tbody").append($("<tr>").click(function() { $(this).find("td input:radio").prop("checked", true); }).append($("<td>").append($("<input>").attr({name: "device_udid", type: "radio", value: item.udid}))).append($("<td>").text(item.udid)).append($("<td>").text(item.model)).append($("<td>").text(item.os)).append($("<td>").text(item.battery + "%")));
+          $("#iosDevices").find("tbody").append($("<tr>").click(function() { $(this).find("td input:radio").prop("checked", true); }).append($("<td>").append($("<input>").attr({name: "device_udid", type: "radio", value: item.udid}))).append($("<td>").text(item.udid)).append($("<td>").text(item.model)).append($("<td>").text(item.os)).append($("<td>").text(item.battery + "%")).append($("<td>").text(item.appversion)).append($("<td>").text(item.appversionAlpha)).append($("<td>").text(item.driverAppversion)).append($("<td>").text(item.driverAppversionAlpha)));
         });
       }
     });

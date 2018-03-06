@@ -23,6 +23,19 @@ module MobileDevicePool
           device['model'] = get_product_name(udid)
           device['os'] = get_os_version(udid)
           device['battery'] = get_battery_level(udid)
+          str = get_app_version(udid)
+          matchdata = str.match(/mytaxi beta(.*?)\n/)
+          device['appversion'] = matchdata
+          str = get_app_version(udid)
+          matchdata = str.match(/mytaxi alpha(.*?)\n/)
+          device['appversionAlpha'] = matchdata
+          str = get_app_version(udid)
+          matchdata = str.match(/mytaxi Driver(.*?)\n/)
+          device['driverAppversion'] = matchdata
+          str = get_app_version(udid)
+          matchdata = str.match(/mytaxi Driver α(.*?)\n/)
+          device['driverAppversionAlpha'] = matchdata
+
           devices.push(device)
         end
       end
@@ -34,13 +47,26 @@ module MobileDevicePool
       def get_product_name(udid)
         @@product_type_name_map[get_info('ideviceinfo', udid, 'ProductType')]
       end
+
+      def get_app_version(udid)
+        `ideviceinstaller -l`.strip
+      end
       
       def get_battery_level(udid)
         get_info('ideviceinfo', udid, 'BatteryCurrentCapacity', 'com.apple.mobile.battery')
       end
       
-      def install_app(file, udid)
-        `ideviceinstaller -u #{udid} -i #{file}`
+      def install_app(file)
+        jobs = list_devices.inject([]) do |result, udid|
+          job = Proc.new do
+            `ideviceinstaller -u #{udid} -i #{file}`
+          end
+          result.push(job)
+        end
+        concurrent_runner = ConcurrentRunner.set
+        concurrent_runner.set_producer_thread(jobs)
+        concurrent_runner.set_consumer_thread
+        concurrent_runner.run
       end
       
       def get_info(cmd, udid, key, domain = nil)
