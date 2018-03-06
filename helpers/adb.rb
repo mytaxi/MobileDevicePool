@@ -39,15 +39,30 @@ module MobileDevicePool
           os_properties = get_properties(device_sn, 'ro.build.version', *%w(release sdk))
           device.merge!(product_properties).merge!(os_properties)
           device['battery'] = get_battery_level(device_sn)
-          info = {}
           info = get_app_info('taxi.android.client.alpha', device_sn)
-          device['passengerAppversionAlpha'] = info['versionName']
+          if !info.nil?
+            device['passengerAppversionAlpha'] = info['versionName']
+          else
+            device['passengerAppversionAlpha'] = 'null'
+          end
           info = get_app_info('taxi.android.client', device_sn)
-          device['passengerAppversion'] = info['versionName']
+          if !info.nil?
+            device['passengerAppversion'] = info['versionName']
+          else
+            device['passengerAppversion'] = 'null'
+          end
           info = get_app_info('taxi.android.driver.alpha', device_sn)
-          device['driverAppversionAlpha'] = info['versionName']
+          if !info.nil?
+            device['driverAppversionAlpha'] = info['versionName']
+          else
+            device['driverAppversionAlpha'] = 'null'
+          end
           info = get_app_info('taxi.android.driver', device_sn)
-          device['driverAppversion'] = info['versionName']
+          if !info.nil?
+            device['driverAppversion'] = info['versionName']
+          else
+            device['driverAppversion'] = 'null'
+          end
           devices.push(device)
         end
       end
@@ -97,6 +112,7 @@ module MobileDevicePool
             info[x.first] = x.last.chomp.split(/\s+/)
           end
           info
+        rescue Exception => e
         end
 
       end
