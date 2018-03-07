@@ -20,7 +20,7 @@ module MobileDevicePool
         devices = list_devices.inject([]) do |devices, udid|
           device = {}
           device['udid'] = udid
-          device['model'] = get_product_name(udid)
+          device['model'] = get_model_name(udid)
           device['os'] = get_os_version(udid)
           device['battery'] = get_battery_level(udid)
           str = get_app_version(udid)
@@ -46,6 +46,10 @@ module MobileDevicePool
       
       def get_product_name(udid)
         @@product_type_name_map[get_info('ideviceinfo', udid, 'ProductType')]
+      end
+
+      def get_model_name(udid)
+        get_info('ideviceinfo', udid, 'ProductType')
       end
 
       def get_app_version(udid)
