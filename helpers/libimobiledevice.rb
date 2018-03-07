@@ -24,18 +24,19 @@ module MobileDevicePool
           device['os'] = get_os_version(udid)
           device['battery'] = get_battery_level(udid)
           str = get_app_version(udid)
+          puts str
           matchdata = str.match(/mytaxi beta(.*?)\n/)
+          puts matchdata
           device['appversion'] = matchdata
-          str = get_app_version(udid)
           matchdata = str.match(/mytaxi alpha(.*?)\n/)
+          puts matchdata
           device['appversionAlpha'] = matchdata
-          str = get_app_version(udid)
           matchdata = str.match(/mytaxi Driver(.*?)\n/)
+          puts matchdata
           device['driverAppversion'] = matchdata
-          str = get_app_version(udid)
           matchdata = str.match(/mytaxi Driver α(.*?)\n/)
+          puts matchdata
           device['driverAppversionAlpha'] = matchdata
-
           devices.push(device)
         end
       end
@@ -53,7 +54,7 @@ module MobileDevicePool
       end
 
       def get_app_version(udid)
-        `ideviceinstaller -l`.strip
+        `ideviceinstaller -u #{udid} -l`.strip
       end
       
       def get_battery_level(udid)
@@ -74,10 +75,12 @@ module MobileDevicePool
       end
       
       def get_info(cmd, udid, key, domain = nil)
-        if domain
+        if domain && key
           `#{cmd} -u #{udid} -q #{domain} -k #{key}`.strip
-        else
+        elsif key
           `#{cmd} -u #{udid} -k #{key}`.strip
+        else
+          `#{cmd} -u #{udid}`.strip
         end
       end
     end
