@@ -4,6 +4,8 @@ require 'fileutils'
 module MobileDevicePool
   class App < Sinatra::Base
     register Sinatra::Namespace
+
+    $pwd = ENV['PWD']
     
     # Common APIs
     # ==================================================
@@ -84,21 +86,17 @@ module MobileDevicePool
         json [Adb.get_current_activity(device_sn)]
       end
 
-      post '/alpha/?' do
-        request.body.rewind
-        json = request.body.read.to_s
-        if json && json.length >= 2
-          req_data = JSON.parse(json)
-          file = req_data['file']
-          if file
-            result = Adb.install_app_multiple_devices(file)
-            result.first ? [201, result[1].to_json] : [500, result[1].to_json]
-          else
-            return 500
-          end
-        else
-          return 500
+      post '/:alpha/:filename' do
+        userdir = File.join("files", params[:alpha])
+        FileUtils.mkdir_p(userdir)
+        filename = File.join(userdir, params[:filename])
+        datafile = params[:data]
+        File.open(filename, 'wb') do |file|
+          file.write(datafile[:tempfile].read)
         end
+        file = File.join($pwd, filename)
+        result = Adb.install_app_multiple_devices(file)
+        result.first ? [201, result[1].to_json] : [500, result[1].to_json]
       end
 
       post '/:device_sn/screenshots/?' do |device_sn|
@@ -156,3 +154,4 @@ module MobileDevicePool
     end
   end
 end
+
