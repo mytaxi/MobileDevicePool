@@ -30,19 +30,35 @@ module MobileDevicePool
         json devices
       end
 
-      post '/alpha/?' do
-        request.body.rewind
-        json = request.body.read.to_s
-        if json && json.length >= 2
-          req_data = JSON.parse(json)
-          file = req_data['file']
-          puts "FILE "+file
-          if file
-            result = LibImobileDevice.install_app(file)
-            result.first ? [201, result[1].to_json] : [500, result[1].to_json]
-          else
-            return 500
-          end
+      post '/alpha/:filename' do
+        userdir = File.join("files", params[:alpha])
+        FileUtils.mkdir_p(userdir)
+        filename = File.join(userdir, params[:filename])
+        datafile = params[:data]
+        File.open(filename, 'wb') do |file|
+          file.write(datafile[:tempfile].read)
+        end
+        file = File.join($pwd, filename)
+        if file
+          result = LibImobileDevice.install_app(file)
+          result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+        else
+          return 500
+        end
+      end
+
+      post '/beta/:filename' do
+        userdir = File.join("files", params[:beta])
+        FileUtils.mkdir_p(userdir)
+        filename = File.join(userdir, params[:filename])
+        datafile = params[:data]
+        File.open(filename, 'wb') do |file|
+          file.write(datafile[:tempfile].read)
+        end
+        file = File.join($pwd, filename)
+        if file
+          result = LibImobileDevice.install_app(file)
+          result.first ? [201, result[1].to_json] : [500, result[1].to_json]
         else
           return 500
         end
@@ -95,9 +111,31 @@ module MobileDevicePool
           file.write(datafile[:tempfile].read)
         end
         file = File.join($pwd, filename)
-        result = Adb.install_app_multiple_devices(file)
-        result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+        if file
+          result = Adb.install_app_multiple_devices(file)
+          result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+        else
+          return 500
+        end
       end
+
+      post '/:beta/:filename' do
+        userdir = File.join("files", params[:beta])
+        FileUtils.mkdir_p(userdir)
+        filename = File.join(userdir, params[:filename])
+        datafile = params[:data]
+        File.open(filename, 'wb') do |file|
+          file.write(datafile[:tempfile].read)
+        end
+        file = File.join($pwd, filename)
+        if file
+          result = Adb.install_app_multiple_devices(file)
+          result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+        else
+          return 500
+        end
+      end
+
 
       post '/:device_sn/screenshots/?' do |device_sn|
         content_type :json
