@@ -30,7 +30,7 @@ module MobileDevicePool
         json devices
       end
 
-      post '/alpha/:filename' do
+      post '/:alpha/:filename' do
         userdir = File.join("files", params[:alpha])
         FileUtils.mkdir_p(userdir)
         filename = File.join(userdir, params[:filename])
@@ -47,7 +47,7 @@ module MobileDevicePool
         end
       end
 
-      post '/beta/:filename' do
+      post '/:beta/:filename' do
         userdir = File.join("files", params[:beta])
         FileUtils.mkdir_p(userdir)
         filename = File.join(userdir, params[:filename])
