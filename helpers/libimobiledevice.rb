@@ -23,19 +23,15 @@ module MobileDevicePool
           device['model'] = get_model_name(udid)
           device['os'] = get_os_version(udid)
           device['battery'] = get_battery_level(udid)
+          device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
-          puts str
           matchdata = str.match(/mytaxi beta(.*?)\n/)
-          puts matchdata
           device['appversion'] = matchdata
           matchdata = str.match(/mytaxi alpha(.*?)\n/)
-          puts matchdata
           device['appversionAlpha'] = matchdata
           matchdata = str.match(/mytaxi Driver(.*?)\n/)
-          puts matchdata
           device['driverAppversion'] = matchdata
           matchdata = str.match(/mytaxi Driver α(.*?)\n/)
-          puts matchdata
           device['driverAppversionAlpha'] = matchdata
           devices.push(device)
         end
@@ -51,6 +47,10 @@ module MobileDevicePool
 
       def get_model_name(udid)
         get_info('ideviceinfo', udid, 'ProductType')
+      end
+
+      def get_device_name(udid)
+        get_info('ideviceinfo', udid, 'DeviceName')
       end
 
       def get_app_version(udid)
