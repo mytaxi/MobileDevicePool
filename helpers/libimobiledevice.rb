@@ -10,12 +10,12 @@ module MobileDevicePool
       end
       list
     end
-    
+
     class << self
       def list_devices
         `idevice_id --list`.split("\n")
       end
-      
+
       def list_devices_with_details
         devices = list_devices.inject([]) do |devices, udid|
           device = {}
@@ -25,32 +25,22 @@ module MobileDevicePool
           device['battery'] = get_battery_level(udid)
           device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
-          puts str
-          matchdata = get_string_between(str, "de.intelligentapps.mytaxibeta, \"", "\", \"mytaxi beta")
+          matchdata = str.match(/mytaxi beta(.*?)\n/)
           device['appversion'] = matchdata
-          matchdata = get_string_between(str, "de.intelligentapps.mytaxi, \"", "\", \"mytaxi alpha")
+          matchdata = str.match(/mytaxi alpha(.*?)\n/)
           device['appversionAlpha'] = matchdata
-          matchdata = get_string_between(str, "de.intelligentapps.mytaxiDriver, \"", "\", \"mytaxi Driver")
+          matchdata = str.match(/mytaxi Driver(.*?)\n/)
           device['driverAppversion'] = matchdata
-          matchdata = get_string_between(str, "de.intelligentapps.mytaxiDriverAlpha, \"", "\", \"mytaxi Driver α")
+          matchdata = str.match(/mytaxi Driver α(.*?)\n/)
           device['driverAppversionAlpha'] = matchdata
           devices.push(device)
         end
       end
 
-      def get_string_between(my_string, start_at, end_at)
-        my_string = " #{my_string}"
-        ini = my_string.index(start_at)
-        return my_string if ini == 0
-        ini += start_at.length
-        length = my_string.index(end_at, ini).to_i - ini
-        my_string[ini,length]
-      end
-      
       def get_os_version(udid)
         get_info('ideviceinfo', udid, 'ProductVersion')
       end
-      
+
       def get_product_name(udid)
         @@product_type_name_map[get_info('ideviceinfo', udid, 'ProductType')]
       end
@@ -66,11 +56,11 @@ module MobileDevicePool
       def get_app_version(udid)
         `ideviceinstaller -u #{udid} -l`.strip
       end
-      
+
       def get_battery_level(udid)
         get_info('ideviceinfo', udid, 'BatteryCurrentCapacity', 'com.apple.mobile.battery')
       end
-      
+
       def install_app(file)
         jobs = list_devices.inject([]) do |result, udid|
           job = Proc.new do
@@ -83,7 +73,7 @@ module MobileDevicePool
         concurrent_runner.set_consumer_thread
         concurrent_runner.run
       end
-      
+
       def get_info(cmd, udid, key, domain = nil)
         if domain && key
           `#{cmd} -u #{udid} -q #{domain} -k #{key}`.strip
@@ -94,7 +84,7 @@ module MobileDevicePool
         end
       end
     end
-    
+
     private_class_method :get_info
   end
 end
