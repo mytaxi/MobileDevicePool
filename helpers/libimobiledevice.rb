@@ -26,12 +26,16 @@ module MobileDevicePool
           device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
           matchdata = str.match(/mytaxi beta(.*?)\n/)
+          puts matchdata
           device['appversion'] = matchdata
           matchdata = str.match(/mytaxi alpha(.*?)\n/)
+          puts matchdata
           device['appversionAlpha'] = matchdata
           matchdata = str.match(/mytaxi Driver(.*?)\n/)
+          puts matchdata
           device['driverAppversion'] = matchdata
           matchdata = str.match(/mytaxi Driver α(.*?)\n/)
+          puts matchdata
           device['driverAppversionAlpha'] = matchdata
           devices.push(device)
         end
