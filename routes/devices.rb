@@ -65,6 +65,23 @@ module MobileDevicePool
       end
     end
 
+    post '/:install/:filename' do
+      userdir = File.join("files", params[:alpha])
+      FileUtils.mkdir_p(userdir)
+      filename = File.join(userdir, params[:filename])
+      datafile = params[:data]
+      File.open(filename, 'wb') do |file|
+        file.write(datafile[:tempfile].read)
+      end
+      file = File.join($pwd, filename)
+      if file
+        result = LibImobileDevice.install_app(file)
+        result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+      else
+        return 500
+      end
+    end
+
     # Android APIs
     # ==================================================
     #
@@ -112,7 +129,7 @@ module MobileDevicePool
         end
         file = File.join($pwd, filename)
         if file
-          result = Adb.install_app_multiple_devices(file)
+          result = Adb.install_app_multiple_devices(file,'package_name')
           result.first ? [201, result[1].to_json] : [500, result[1].to_json]
         else
           return 500
@@ -120,6 +137,23 @@ module MobileDevicePool
       end
 
       post '/:beta/:filename' do
+        userdir = File.join("files", params[:beta])
+        FileUtils.mkdir_p(userdir)
+        filename = File.join(userdir, params[:filename])
+        datafile = params[:data]
+        File.open(filename, 'wb') do |file|
+          file.write(datafile[:tempfile].read)
+        end
+        file = File.join($pwd, filename)
+        if file
+          result = Adb.install_app_multiple_devices(file)
+          result.first ? [201, result[1].to_json] : [500, result[1].to_json]
+        else
+          return 500
+        end
+      end
+
+      post '/:install/:filename' do
         userdir = File.join("files", params[:beta])
         FileUtils.mkdir_p(userdir)
         filename = File.join(userdir, params[:filename])

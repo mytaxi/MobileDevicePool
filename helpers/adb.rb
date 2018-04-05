@@ -126,10 +126,11 @@ module MobileDevicePool
           return true
       end
 
-      def install_app_multiple_devices(package_name)
+      def install_app_multiple_devices(file,package_name)
         jobs = list_devices.inject([]) do |result, device_sn|
           job = Proc.new do
-            install_app(package_name, device_sn)
+            uninstall_app(package_name,device_sn)
+            install_app(file, device_sn)
           end
           result.push(job)
         end

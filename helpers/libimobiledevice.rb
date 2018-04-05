@@ -25,16 +25,26 @@ module MobileDevicePool
           device['battery'] = get_battery_level(udid)
           device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
-          matchdata = str.match(/mytaxi beta(.*?)\n/)
+          puts str
+          matchdata = get_string_between(str, "de.intelligentapps.mytaxibeta, \"", "\", \"mytaxi beta")
           device['appversion'] = matchdata
-          matchdata = str.match(/mytaxi alpha(.*?)\n/)
+          matchdata = get_string_between(str, "de.intelligentapps.mytaxi, \"", "\", \"mytaxi alpha")
           device['appversionAlpha'] = matchdata
-          matchdata = str.match(/mytaxi Driver(.*?)\n/)
+          matchdata = get_string_between(str, "de.intelligentapps.mytaxiDriver, \"", "\", \"mytaxi Driver")
           device['driverAppversion'] = matchdata
-          matchdata = str.match(/mytaxi Driver α(.*?)\n/)
+          matchdata = get_string_between(str, "de.intelligentapps.mytaxiDriverAlpha, \"", "\", \"mytaxi Driver α")
           device['driverAppversionAlpha'] = matchdata
           devices.push(device)
         end
+      end
+
+      def get_string_between(my_string, start_at, end_at)
+        my_string = " #{my_string}"
+        ini = my_string.index(start_at)
+        return my_string if ini == 0
+        ini += start_at.length
+        length = my_string.index(end_at, ini).to_i - ini
+        my_string[ini,length]
       end
       
       def get_os_version(udid)
