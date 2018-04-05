@@ -129,7 +129,7 @@ module MobileDevicePool
         end
         file = File.join($pwd, filename)
         if file
-          result = Adb.install_app_multiple_devices(file,'package_name')
+          result = Adb.install_app_multiple_devices(file,'taxi.android.client.alpha')
           result.first ? [201, result[1].to_json] : [500, result[1].to_json]
         else
           return 500
