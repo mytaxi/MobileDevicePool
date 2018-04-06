@@ -68,6 +68,7 @@ module MobileDevicePool
       def install_app(file)
         jobs = list_devices.inject([]) do |result, udid|
           job = Proc.new do
+            puts 'install on:'+udid
             `ideviceinstaller -u #{udid} -i #{file}`
           end
           result.push(job)
