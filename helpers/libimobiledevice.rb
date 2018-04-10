@@ -20,22 +20,22 @@ module MobileDevicePool
         devices = list_devices.inject([]) do |devices, udid|
           device = {}
           device['udid'] = udid
+          puts 'device: '+udid
           device['model'] = get_model_name(udid)
+          puts 'model '+device['model']
           device['os'] = get_os_version(udid)
           device['battery'] = get_battery_level(udid)
           device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
+          puts str
           matchdata = str.match(/mytaxi beta(.*?)\n/)
-          puts matchdata
           device['appversion'] = matchdata
           matchdata = str.match(/mytaxi alpha(.*?)\n/)
-          puts matchdata
+          puts udid+':::::'+matchdata
           device['appversionAlpha'] = matchdata
           matchdata = str.match(/mytaxi Driver(.*?)\n/)
-          puts matchdata
           device['driverAppversion'] = matchdata
           matchdata = str.match(/mytaxi Driver α(.*?)\n/)
-          puts matchdata
           device['driverAppversionAlpha'] = matchdata
           devices.push(device)
         end

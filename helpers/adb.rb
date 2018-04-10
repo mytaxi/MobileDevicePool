@@ -118,7 +118,7 @@ module MobileDevicePool
       end
 
       def install_app(package_name, device_sn)
-          cmd = synthesize_command("adb install #{package_name}", device_sn)
+          cmd = synthesize_command("adb install -r -d #{package_name}", device_sn)
           result = `#{cmd}`.split("\r\n").last
           if result.match('Failure')
             return false
@@ -126,10 +126,9 @@ module MobileDevicePool
           return true
       end
 
-      def install_app_multiple_devices(file,package_name)
+      def install_app_multiple_devices(file)
         jobs = list_devices.inject([]) do |result, device_sn|
           job = Proc.new do
-            uninstall_app(package_name,device_sn)
             install_app(file, device_sn)
           end
           result.push(job)
