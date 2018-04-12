@@ -25,14 +25,14 @@ module MobileDevicePool
           device['battery'] = get_battery_level(udid)
           device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
-          matchdata = str[/de.intelligentapps.mytaxibeta - mytaxi beta (.*?)\n/, 1]
+          matchdata = str[/mytaxi beta (.*?)\n/, 1]
           #matchdata = str
           device['appversion'] = matchdata
-          matchdata = str[/de.intelligentapps.mytaxi - mytaxi alpha (.*?)\n/, 1]
+          matchdata = str[/mytaxi alpha (.*?)\n/, 1]
           device['appversionAlpha'] = matchdata
-          matchdata = str[/de.intelligentapps.mytaxiDriver - mytaxi Driver (.*?)\n/, 1]
+          matchdata = str[/mytaxi Driver (.*?)\n/, 1]
           device['driverAppversion'] = matchdata
-          matchdata = str[/de.intelligentapps.mytaxiDriverAlpha - mytaxi Driver α (.*?)\n/, 1]
+          matchdata = str[/mytaxi Driver α (.*?)\n/, 1]
           device['driverAppversionAlpha'] = matchdata
           devices.push(device)
         end
