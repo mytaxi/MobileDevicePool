@@ -67,10 +67,6 @@ module MobileDevicePool
         end
       end
 
-      def writehello
-        puts "Threads sind geil"
-      end
-      
       def list_installed_packages(device_sn = nil)
         cmd = synthesize_command('adb shell pm list packages', device_sn)
         `#{cmd}`.split("\n").map! { |pkg| pkg.gsub(/^package:/, '').chomp }
