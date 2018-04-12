@@ -25,7 +25,8 @@ module MobileDevicePool
           device['battery'] = get_battery_level(udid)
           device['namedevice'] = get_device_name(udid)
           str = get_app_version(udid)
-          matchdata = str[/de.intelligentapps.mytaxibeta, "(.*?)", "mytaxi beta"/, 1]
+          #matchdata = str[/de.intelligentapps.mytaxibeta, "(.*?)", "mytaxi beta"/, 1]
+          matchdata = str
           device['appversion'] = matchdata
           matchdata = str[/de.intelligentapps.mytaxi, "(.*?)", "mytaxi alpha/, 1]
           device['appversionAlpha'] = matchdata
