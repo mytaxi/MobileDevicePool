@@ -28,7 +28,8 @@ module MobileDevicePool
           matchdata = str[/mytaxi beta (.*?)\n/, 1]
           #matchdata = str
           device['appversion'] = matchdata
-          matchdata = str[/mytaxi alpha (.*?)\n/, 1]
+          #matchdata = str
+          matchdata = str[/mytaxi alpha (.*?)$/, 1]
           device['appversionAlpha'] = matchdata
           matchdata = str[/mytaxi Driver (.*?)\n/, 1]
           device['driverAppversion'] = matchdata
